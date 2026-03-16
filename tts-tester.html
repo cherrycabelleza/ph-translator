@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTS Testing Page - Admin</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="admin.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --primary: #3b82f6;
+      --text: #1f2937;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --shadow-light: 0 1px 3px rgba(0,0,0,0.05);
+      --radius: 12px;
+      --purple: #8b5cf6;
+      --purple-light: #f3e8ff;
+    }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+    }
+
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .input-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-light);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .input-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .textarea-wrapper {
+      position: relative;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fafbfc;
+      overflow: hidden;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .textarea-wrapper:focus-within {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 16px 18px;
+      border: 0;
+      resize: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.6;
+      box-sizing: border-box;
+      vertical-align: top;
+    }
+
+    textarea::placeholder {
+      color: rgba(107, 114, 128, 0.6);
+    }
+
+    .textarea-footer {
+      padding: 8px 18px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .char-count {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .lang-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lang-select-wrap label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .lang-select-wrap select {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      height: 48px;
+      padding: 0 24px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+      user-select: none;
+      text-decoration: none;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--purple);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #7c3aed;
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-light);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #f9fafb;
+      border-color: var(--text-secondary);
+    }
+
+    .btn .material-icons-outlined {
+      font-size: 20px;
+    }
+
+    .btn-primary .material-icons-outlined {
+      color: #fff;
+    }
+
+    /* Results Card */
+    .results-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-light);
+      overflow: hidden;
+      display: none;
+    }
+
+    .results-card.visible {
+      display: block;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .results-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .results-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .status-badge.playing {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .status-badge.ready {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .status-badge.complete {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .status-badge.error {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .results-body {
+      padding: 20px 24px;
+    }
+
+    .syllables-section {
+      margin-bottom: 16px;
+    }
+
+    .syllables-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .syllables-display {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+
+    .syllable {
+      display: inline-block;
+      padding: 4px 10px;
+      margin: 2px;
+      background: linear-gradient(180deg, #ede9fe, #ddd6fe);
+      border-radius: 8px;
+      font-weight: 500;
+      color: #7c3aed;
+    }
+
+    .mode-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: auto;
+    }
+
+    .mode-badge.word-audio {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .mode-badge.syllable-fallback {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .info-section {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 12px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .info-section .material-icons-outlined {
+      font-size: 20px;
+      color: #0284c7;
+      flex-shrink: 0;
+    }
+
+    .info-section p {
+      margin: 0;
+      font-size: 13px;
+      color: #0369a1;
+      line-height: 1.5;
+    }
+
+    .placeholder-state {
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .placeholder-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: var(--purple-light);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .placeholder-icon .material-icons-outlined {
+      font-size: 32px;
+      color: var(--purple);
+    }
+
+    .placeholder-state h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 8px 0;
+    }
+
+    .placeholder-state p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .admin-container {
+        padding: 16px;
+      }
+
+      .input-card {
+        padding: 16px;
+      }
+
+      textarea {
+        min-height: 100px;
+        font-size: 15px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .textarea-footer {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <h1 class="admin-title">TTS Testing Page</h1>
+      <div class="nav-buttons">
+        <a href="PLT_MainPage.php" class="nav-btn" id="navMain">
+          <span class="material-icons-outlined" style="font-size:16px">home</span>
+          Main Page
+        </a>
+        <a href="AdminMainPage.php" class="nav-btn" id="navUnknown">
+          <span class="material-icons-outlined" style="font-size:16px">list</span>
+          Unknown Words
+        </a>
+        <a href="TranslationPage.php" class="nav-btn" id="navTranslations">
+          <span class="material-icons-outlined" style="font-size:16px">translate</span>
+          Translations
+        </a>
+        <a href="users-translations-adminview.php" class="nav-btn" id="navModeration">
+          <span class="material-icons-outlined" style="font-size:16px">gavel</span>
+          Moderation
+        </a>
+        <a href="TranslationLogs.php" class="nav-btn" id="navLogs">
+          <span class="material-icons-outlined" style="font-size:16px">history</span>
+          Logs
+        </a>
+        <a href="libraries.html" class="nav-btn" id="navLibraries">
+          <span class="material-icons-outlined" style="font-size:16px">menu_book</span>
+          Library
+        </a>
+        <a href="tts-tester.html" class="nav-btn active" id="navTTS">
+          <span class="material-icons-outlined" style="font-size:16px">volume_up</span>
+          TTS Tester
+        </a>
+        <a href="admin_word_checker.html" class="nav-btn" id="navWordCheck">
+          <span class="material-icons-outlined" style="font-size:16px">music_note</span>
+          Word Audio
+        </a>
+        <a href="admin_syllable_checker.html" class="nav-btn" id="navSyllableCheck">
+          <span class="material-icons-outlined" style="font-size:16px">grid_on</span>
+          Syllable Audio
+        </a>
+      </div>
+    </header>
+
+    <!-- Input Card -->
+    <div class="input-card">
+      <label for="inputText" class="input-label">Enter Text to Speak</label>
+      <div class="textarea-wrapper">
+        <textarea 
+          id="inputText" 
+          placeholder="Type or paste text here to convert to speech..."
+          maxlength="500"
+        ></textarea>
+      </div>
+      <div class="textarea-footer">
+        <span id="charCount" class="char-count">0 / 500</span>
+        <div class="lang-select-wrap">
+          <label for="toLang">Output Language:</label>
+          <select id="toLang">
+            <option value="tl">Tagalog</option>
+            <option value="ceb">Cebuano</option>
+            <option value="ilo">Ilocano</option>
+            <option value="hil">Hiligaynon</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="playBtn" class="btn btn-primary">
+          <span class="material-icons-outlined">play_arrow</span>
+          Play TTS
+        </button>
+        <button id="stopBtn" class="btn btn-secondary" disabled>
+          <span class="material-icons-outlined">stop</span>
+          Stop
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div id="resultsCard" class="results-card">
+      <div class="results-header">
+        <h3>Syllable Breakdown</h3>
+        <span id="statusBadge" class="status-badge ready">Ready</span>
+        <span id="modeBadge" class="mode-badge"></span>
+      </div>
+      <div class="results-body">
+        <div class="syllables-section">
+          <span class="syllables-label">Syllables Used</span>
+          <div id="syllables" class="syllables-display">
+            No syllables to display yet
+          </div>
+        </div>
+        <div class="info-section">
+          <span class="material-icons-outlined">info</span>
+          <p>The TTS system first tries to play complete word audio files. If not available, it falls back to playing individual syllables from the voice pack.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="results-card visible">
+      <div class="placeholder-state">
+        <div class="placeholder-icon">
+          <span class="material-icons-outlined">volume_up</span>
+        </div>
+        <h3>Ready to Test</h3>
+        <p>Enter some text above and click "Play TTS" to hear the synthesized speech.</p>
+      </div>
+    </div>
+  </div>
+
+ <script src="dialectDictionary.js"></script>
+  <script src="tts-assistant.js"></script>
+  <script>
+    // Syllable segmentation functions (matching tts-assistant.js)
+    const VOWELS = ['a','e','i','o','u'];
+    const CONSONANTS = ['b','k','d','g','h','l','m','n','p','r','s','t','w','y'];
+    
+    const BASE_NG_SYLLABLES = [
+      'ang','eng','ing','ong','ung',
+      'nga','nge','ngi','ngo','ngu',
+      'ngan','ngen','ngin','ngon','ngun',
+      'ngat','nget','ngit','ngot','ngut'
+    ];
+
+    const CV_NG_SYLLABLES = [];
+    for (const c of CONSONANTS)
+      for (const v of VOWELS)
+        CV_NG_SYLLABLES.push(c + v + 'ng');
+
+    const NG_SYLLABLES = [...BASE_NG_SYLLABLES, ...CV_NG_SYLLABLES].sort((a,b)=>b.length - a.length);
+
+    function isVowel(c){ return VOWELS.includes(c); }
+    function isConsonant(c){ return CONSONANTS.includes(c) || c === 'ng'; }
+
+    function handleNGVCEndOfSentence(word){
+      if(word.length >= 4){
+        const last4 = word.slice(-4);
+        const last2 = last4.slice(0,2);
+        const lastVC = last4.slice(2,4);
+        if(last2 === 'ng' && isVowel(lastVC[0]) && isConsonant(lastVC[1])){
+          const prefix = word.slice(0, word.length - 4);
+          const prefixSegs = prefix.length ? segmentWord(prefix) : [];
+          return [...prefixSegs, last4];
+        }
+      }
+      return null;
+    }
+
+    function segmentWord(word){
+      const cache = {};
+
+      function helper(start){
+        if (start >= word.length) return [[]];
+        if (cache[start]) return cache[start];
+
+        const results = [];
+
+        for (const syl of NG_SYLLABLES){
+          if (word.startsWith(syl, start)){
+            for (const r of helper(start + syl.length))
+              results.push([syl, ...r]);
+          }
+        }
+
+        for (let len = 2; len <= 3; len++){
+          if (start + len <= word.length){
+            const p = word.slice(start, start + len);
+            if (len === 2 && isConsonant(p[0]) && isVowel(p[1]))
+              results.push(...helper(start + len).map(r => [p, ...r]));
+            if (len === 3 && isConsonant(p[0]) && isVowel(p[1]) && isConsonant(p[2]))
+              results.push(...helper(start + len).map(r => [p, ...r]));
+          }
+        }
+
+        if (isVowel(word[start])){
+          results.push(...helper(start + 1).map(r => [word[start], ...r]));
+        }
+
+        if (start + 2 <= word.length){
+          const vc = word.slice(start, start + 2);
+          if (isVowel(vc[0]) && isConsonant(vc[1]) &&
+             (start === 0 || start + 2 === word.length)){
+            results.push(...helper(start + 2).map(r => [vc, ...r]));
+          }
+        }
+
+        cache[start] = results;
+        return results;
+      }
+
+      let segs = helper(0).filter(seg =>
+        !seg.some(s => s.length === 1 && !isVowel(s))
+      );
+
+      if (!segs.length) {
+        segs = [word.match(/(ng|[bcdfghjklmnpqrstvwxyz]?[aeiou][bcdfghjklmnpqrstvwxyz]?)/gi) || [word]];
+      }
+
+      segs.sort((a,b)=>{
+        const score = seg=>{
+          let s = 0;
+          seg.forEach((sy,i)=>{
+            if (NG_SYLLABLES.includes(sy)) s -= 10;
+            else if (sy.length===2 && isConsonant(sy[0]) && isVowel(sy[1])) s -= 5;
+            else if (sy.length===3 && isConsonant(sy[0]) && isVowel(sy[1]) && isConsonant(sy[2])) s -= 4;
+            else if (sy.length===2 && isVowel(sy[0]) && isConsonant(sy[1]) && i>0 && i<seg.length-1) s += 10;
+            else if (sy.length===1 && !isVowel(sy)) s += 20;
+          });
+          return s;
+        };
+        return score(a)-score(b);
+      });
+
+      return segs[0] || [word];
+    }
+
+    function normalize(text){
+      return (text || '')
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u2018\u2019']/g, '')
+        .replace(/[^a-z]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .split(/\s+/);
+    }
+
+    const inputText = document.getElementById('inputText');
+    const playBtn = document.getElementById('playBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const syllablesEl = document.getElementById('syllables');
+    const resultsCard = document.getElementById('resultsCard');
+    const emptyState = document.getElementById('emptyState');
+    const charCount = document.getElementById('charCount');
+    const statusBadge = document.getElementById('statusBadge');
+    const modeBadge = document.getElementById('modeBadge');
+    const toLangSelect = document.getElementById('toLang');
+
+    inputText.addEventListener('input', () => {
+      const length = inputText.value.length;
+      charCount.textContent = `${length} / 500`;
+      charCount.style.color = length >= 450 ? '#dc2626' : 'var(--text-secondary)';
+    });
+
+    // Extend TTS bot with plan function
+    const LANG_TO_PREFIX = {
+      tl: 'tl',
+      ceb: 'cb',
+      ilo: 'il',
+      hil: 'hi'
+    };
+
+    const WORD_AUDIO_BASE_URL = 'https://owqcypobhddssaofmzcf.supabase.co/storage/v1/object/public/tts-audio/ccg-words-voicepack/';
+
+    async function checkWordAudio(word, code) {
+      try {
+        const r = await fetch(`${WORD_AUDIO_BASE_URL}${word}-${code}.mp3?v=${Date.now()}`, { method:'HEAD' });
+        return r.ok;
+      } catch { return false; }
+    }
+
+    window.TTS.bot.plan = async function(text) {
+      const words = normalize(text);
+      const prefix = LANG_TO_PREFIX[toLangSelect.value];
+      let useWordAudio = false;
+
+      // Try to find word audio
+      if (prefix) {
+        for (let i=0; i<50; i++) {
+          const code = `${prefix}${i}`;
+          let ok = true;
+          for (const w of words){
+            if (!(await checkWordAudio(w, code))){
+              ok = false;
+              break;
+            }
+          }
+          if (ok) {
+            useWordAudio = true;
+            break;
+          }
+        }
+      }
+
+      // Get syllables
+      const units = [];
+      for (const w of words) {
+        const ngvcSegs = handleNGVCEndOfSentence(w);
+        const segs = ngvcSegs || segmentWord(w);
+        units.push(...segs);
+      }
+
+      return {
+        units: units,
+        mode: useWordAudio ? 'word-audio' : 'syllable-fallback'
+      };
+    };
+
+    playBtn.addEventListener('click', async () => {
+      const text = inputText.value.trim();
+      if (!text) {
+        inputText.parentElement.style.animation = 'shake 0.3s ease';
+        setTimeout(() => { inputText.parentElement.style.animation = ''; }, 300);
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      resultsCard.classList.add('visible');
+
+      playBtn.disabled = true;
+      playBtn.innerHTML = '<div class="spinner"></div> Playing...';
+      stopBtn.disabled = false;
+      statusBadge.textContent = 'Planning';
+      statusBadge.className = 'status-badge playing';
+      modeBadge.textContent = '';
+      modeBadge.className = 'mode-badge';
+
+      try {
+        const plan = await window.TTS.bot.plan(text);
+
+        // Display syllables
+        if (plan.units && plan.units.length > 0) {
+          syllablesEl.innerHTML = plan.units
+            .map(s => `<span class="syllable">${s}</span>`)
+            .join(' ');
+        } else {
+          syllablesEl.innerHTML = 'No syllables detected';
+        }
+
+        // Update mode badge
+        if (plan.mode === 'word-audio') {
+          modeBadge.textContent = 'Word Audio';
+          modeBadge.className = 'mode-badge word-audio';
+        } else {
+          modeBadge.textContent = 'Syllable Fallback';
+          modeBadge.className = 'mode-badge syllable-fallback';
+        }
+
+        statusBadge.textContent = 'Playing';
+        
+        // Play TTS
+        await window.TTS.bot.speak(text);
+
+        statusBadge.textContent = 'Complete';
+        statusBadge.className = 'status-badge complete';
+        
+        setTimeout(() => { 
+          statusBadge.textContent = 'Ready';
+          statusBadge.className = 'status-badge ready';
+        }, 2000);
+
+      } catch (error) {
+        console.error('TTS Error:', error);
+        syllablesEl.innerHTML = 'Error: Could not generate speech';
+        statusBadge.textContent = 'Error';
+        statusBadge.className = 'status-badge error';
+      } finally {
+        playBtn.disabled = false;
+        playBtn.innerHTML = '<span class="material-icons-outlined">play_arrow</span> Play TTS';
+        stopBtn.disabled = true;
+      }
+    });
+
+    stopBtn.addEventListener('click', async () => {
+      if (window.TTS && window.TTS.bot) {
+        speechSynthesis.cancel();
+      }
+      
+      playBtn.disabled = false;
+      playBtn.innerHTML = '<span class="material-icons-outlined">play_arrow</span> Play TTS';
+      stopBtn.disabled = true;
+      statusBadge.textContent = 'Stopped';
+      statusBadge.className = 'status-badge error';
+    });
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

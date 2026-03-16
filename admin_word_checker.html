@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Word Audio Checker — Admin</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="admin.css" rel="stylesheet">
+  <style>
+    .checker-card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow-light);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+    }
+    .checker-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .checker-toolbar input[type="text"] {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      min-width: 260px;
+    }
+    .checker-toolbar input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+    }
+    .stop-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .stop-btn:hover {
+      background: var(--accent);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .status-ok {
+      color: #16a34a;
+      font-weight: 600;
+    }
+    .status-missing {
+      color: #dc2626;
+      font-weight: 600;
+    }
+    .table-container {
+      margin-top: 8px;
+      max-height: 520px;
+      overflow-y: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: var(--shadow-light);
+      display: block; /* override admin.css default */
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 1;
+    }
+    th {
+      padding: 12px 16px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    tr:hover td {
+      background: var(--accent);
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <h1 class="admin-title">Word Audio Checker</h1>
+      <div class="nav-buttons">
+        <a href="PLT_MainPage.php" class="nav-btn" id="navMain">
+          <span class="material-icons-outlined" style="font-size:16px">home</span>
+          Main Page
+        </a>
+        <a href="AdminMainPage.php" class="nav-btn" id="navUnknown">
+          <span class="material-icons-outlined" style="font-size:16px">list</span>
+          Unknown Words
+        </a>
+        <a href="TranslationPage.php" class="nav-btn" id="navTranslations">
+          <span class="material-icons-outlined" style="font-size:16px">translate</span>
+          Translations
+        </a>
+        <a href="users-translations-adminview.php" class="nav-btn" id="navModeration">
+          <span class="material-icons-outlined" style="font-size:16px">gavel</span>
+          Moderation
+        </a>
+        <a href="TranslationLogs.php" class="nav-btn" id="navLogs">
+          <span class="material-icons-outlined" style="font-size:16px">history</span>
+          Logs
+        </a>
+        <a href="libraries.html" class="nav-btn" id="navLibraries">
+          <span class="material-icons-outlined" style="font-size:16px">menu_book</span>
+          Library
+        </a>
+        <a href="tts-tester.html" class="nav-btn" id="navTTS">
+          <span class="material-icons-outlined" style="font-size:16px">volume_up</span>
+          TTS Tester
+        </a>
+        <a href="admin_word_checker.html" class="nav-btn active" id="navWordCheck">
+          <span class="material-icons-outlined" style="font-size:16px">music_note</span>
+          Word Audio
+        </a>
+        <a href="admin_syllable_checker.html" class="nav-btn" id="navSyllableCheck">
+          <span class="material-icons-outlined" style="font-size:16px">grid_on</span>
+          Syllable Audio
+        </a>
+      </div>
+    </header>
+
+    <div class="checker-card">
+      <div class="checker-toolbar">
+        <input type="text" id="searchInput" placeholder="Search word…">
+        <button type="button" class="stop-btn" onclick="stopAudio()">
+          <span class="material-icons-outlined" style="font-size:18px">stop</span>
+          Stop Audio
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40%">Word</th>
+              <th style="width:30%">Status</th>
+              <th style="width:30%">Play</th>
+            </tr>
+          </thead>
+          <tbody id="wordTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+// ---------------- AUDIO CONTROL ----------------
+let currentAudio = null;
+
+const WORD_AUDIO_BASE_URL = 'https://owqcypobhddssaofmzcf.supabase.co/storage/v1/object/public/tts-audio/ccg-words-voicepack/';
+
+function playWord(word, code) {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
+    currentAudio = new Audio(`${WORD_AUDIO_BASE_URL}${word}-${code}.mp3?v=${Date.now()}`);
+    currentAudio.play();
+}
+
+function stopAudio() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+}
+
+// ---------------- WORDS LIST ----------------
+const WORDS = [
+    'ang', 'pangalan', 'ko', 'ay', 'ano', 'balita', 'na', 'oras', 'mo', 
+    'gutom', 'ako', 'hindi', 'kamusta', 'kumain', 'ka', 'ba', 'maaari', 
+    'ba', 'kitang', 'tawagan','mag', 'ingat', 'magandang', 'gabi', 'hapon', 
+    'tanghali', 'umaga', 'maghintay', 'kano', 'ito', 'maraming', 'salamat', 
+    'masarap', 'masaya', 'nalulungkot', 'nasaan', 'ang', 'banyo', 'opo', 
+    'paalam', 'paborito', 'pito', 'ni', 'pasensya', 'saan', 'nakatira', 
+    'pupunta', 'sana', 'magkita', 'tayo', 'ulit', 'tulungan', 'mo', 'ako', 
+    'walang', 'anuman', 'akong', 'ngalan', 'kay', 'unsa', 'imong', 'gigutom', 
+    'na', 'ko', 'dili', 'pwede', 'tika', 'amping', 'maayong', 'gabie', 
+    'hapon', 'udto', 'buntag', 'paghulat', 'pila', 'daghang', 'lami', 
+    'malipayon', 'naguol', 'oo', 'babay', 'paborito', 'na', 'ko', 'ni', 
+    'asa', 'ka', 'nagpuyo', 'paingon', 'hinaut', 'tabangi', 'way', 'sapayan', 
+    'halong', 'hulat', 'huo', 'indi', 'nasuboan', 'buligi', 'dispensar', 
+    'tagpila', 'kadagiti', 'agkikita', 'tulongannak', 'uray', 'wen', 'mabisinakon', 
+    'nangan', 'naimas', 'nalidayak', 'naragsakak', 'paboritok', 'daytoy', 
+    'siadin', 'tinagan', 'ket', 'mabalin', 'awagan', 'what', 'is', 'the', 
+    'news', 'time', 'it', 'your', 'name', 'I', 'am', 'yes', 'you\'re', 'welcome', 
+    'can', 'call', 'delicious', 'good', 'afternoon', 'morning', 'evening', 
+    'noon', 'have', 'eaten', 'hello', 'help', 'hope', 'see', 'again', 'much', 
+    'this', 'sorry', 'take', 'thanks', 'cookie', 'test', 'upload', 'taena', 
+    'testing321', 'patan-awa'
+];
+
+// Language prefix for audio code
+const LANG_TO_PREFIX = { tl:'tl', ceb:'cb', ilo:'il', en:'en', hil:'hi' };
+function getPrefix() {
+    const to = 'tl'; // hardcoded for now, can get from select
+    return LANG_TO_PREFIX[to] || 'tl';
+}
+
+// ---------------- CHECK AUDIO ----------------
+async function checkWordAudio(word, code) {
+    try {
+        const res = await fetch(`${WORD_AUDIO_BASE_URL}${word}-${code}.mp3`, { method:'HEAD' });
+        return res.ok;
+    } catch { return false; }
+}
+
+// ---------------- BUILD TABLE ----------------
+async function buildTable() {
+    const tbody = document.getElementById('wordTable');
+    tbody.innerHTML = '';
+
+    const prefix = getPrefix();
+    for (const word of WORDS){
+        const row = document.createElement('tr');
+        row.dataset.word = word.toLowerCase();
+
+        // Find first available code
+        let availableCode = null;
+        for (let i=0; i<50; i++){
+            const code = prefix + i;
+            if(await checkWordAudio(word, code)){
+                availableCode = code;
+                break;
+            }
+        }
+
+        const statusText = availableCode ? '✔ Available' : '✖ Missing';
+        const statusClass = availableCode ? 'status-ok' : 'status-missing';
+
+        row.innerHTML = `
+            <td>${word}</td>
+            <td class="${statusClass}">${statusText}</td>
+            <td>
+                <button ${availableCode ? '' : 'disabled'} id="btn_${word}">▶ Play</button>
+            </td>
+        `;
+
+        if(availableCode){
+            row.querySelector(`#btn_${word}`).onclick = () => playWord(word, availableCode);
+        }
+
+        tbody.appendChild(row);
+    }
+}
+
+// ---------------- SEARCH FILTER ----------------
+document.getElementById('searchInput').addEventListener('input', function(){
+    const filter = this.value.toLowerCase();
+    document.querySelectorAll('#wordTable tr').forEach(row=>{
+        const word = row.dataset.word;
+        row.style.display = word.includes(filter) ? '' : 'none';
+    });
+});
+
+// ---------------- INIT ----------------
+buildTable();
+// Set active nav on load (defensive if opened from another route)
+const currentPage = window.location.pathname.split('/').pop();
+if (currentPage === 'admin_word_checker.html' && document.getElementById('navWordCheck')) {
+  document.getElementById('navWordCheck').classList.add('active');
+}
+  </script>
+
+</body>
+</html>

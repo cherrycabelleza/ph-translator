@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dialect Translation Library - Admin</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="admin.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --primary: #3b82f6;
+      --text: #1f2937;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --shadow-light: 0 1px 3px rgba(0,0,0,0.05);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+    }
+
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .control-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-light);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .select-group {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .select-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      box-shadow: var(--shadow-light);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .swap-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      background: var(--card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.12s ease, background 0.12s ease;
+      margin-bottom: 2px;
+    }
+
+    .swap-icon:hover {
+      transform: translateY(-1px);
+      background: #f0f7ff;
+    }
+
+    .swap-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--primary);
+    }
+
+    .btn {
+      height: 48px;
+      padding: 0 24px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+      user-select: none;
+      text-decoration: none;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Results */
+    .results-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-light);
+      overflow: hidden;
+    }
+
+    .results-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .results-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+      .table-container {
+      overflow-x: auto;
+      max-height: 500px;
+      overflow-y: auto;
+      display: block; /* override admin.css default */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 400px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    th {
+      background: var(--bg);
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px 20px;
+      font-size: 15px;
+      color: var(--text);
+      border-bottom: 1px solid #f1f4f9;
+    }
+
+    tr:hover td {
+      background: var(--accent);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .empty-state {
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: var(--accent);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-icon .material-icons-outlined {
+      font-size: 32px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 8px 0;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .error-message {
+      padding: 20px 24px;
+      background: #fef2f2;
+      color: #dc2626;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .error-message .material-icons-outlined {
+      font-size: 20px;
+      color: #dc2626;
+    }
+
+    @media (max-width: 768px) {
+      .admin-container {
+        padding: 16px;
+      }
+
+      .control-card {
+        padding: 16px;
+      }
+
+      .control-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .select-group {
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <h1 class="admin-title">Library</h1>
+      <div class="nav-buttons">
+        <a href="PLT_MainPage.php" class="nav-btn" id="navMain">
+          <span class="material-icons-outlined" style="font-size:16px">home</span>
+          Main Page
+        </a>
+        <a href="AdminMainPage.php" class="nav-btn" id="navUnknown">
+          <span class="material-icons-outlined" style="font-size:16px">list</span>
+          Unknown Words
+        </a>
+        <a href="TranslationPage.php" class="nav-btn" id="navTranslations">
+          <span class="material-icons-outlined" style="font-size:16px">translate</span>
+          Translations
+        </a>
+        <a href="users-translations-adminview.php" class="nav-btn" id="navModeration">
+          <span class="material-icons-outlined" style="font-size:16px">gavel</span>
+          Moderation
+        </a>
+        <a href="TranslationLogs.php" class="nav-btn" id="navLogs">
+          <span class="material-icons-outlined" style="font-size:16px">history</span>
+          Logs
+        </a>
+        <a href="libraries.html" class="nav-btn active" id="navLibraries">
+          <span class="material-icons-outlined" style="font-size:16px">menu_book</span>
+          Library
+        </a>
+        <a href="tts-tester.html" class="nav-btn" id="navTTS">
+          <span class="material-icons-outlined" style="font-size:16px">volume_up</span>
+          TTS Tester
+        </a>
+        <a href="admin_word_checker.html" class="nav-btn" id="navWordCheck">
+          <span class="material-icons-outlined" style="font-size:16px">music_note</span>
+          Word Audio
+        </a>
+        <a href="admin_syllable_checker.html" class="nav-btn" id="navSyllableCheck">
+          <span class="material-icons-outlined" style="font-size:16px">grid_on</span>
+          Syllable Audio
+        </a>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <div class="control-card">
+      <div class="control-row">
+        <div class="select-group">
+          <label for="fromLang">From Language</label>
+          <select id="fromLang"></select>
+        </div>
+
+        <div class="swap-icon" title="Swap languages" onclick="swapLanguages()">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
+          </svg>
+        </div>
+
+        <div class="select-group">
+          <label for="toLang">To Language</label>
+          <select id="toLang"></select>
+        </div>
+
+        <button id="showBtn" class="btn btn-primary">
+          <span class="material-icons-outlined" style="font-size:18px">search</span>
+          Show Translations
+        </button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-card">
+      <div class="results-header">
+        <h2 class="results-title">Translation Results</h2>
+        <span id="resultsCount" class="results-count"></span>
+      </div>
+      <div id="translations" class="table-container">
+        <div class="empty-state">
+          <div class="empty-icon">
+            <span class="material-icons-outlined">translate</span>
+          </div>
+          <h3>Select Languages</h3>
+          <p>Choose a source and target language, then click "Show Translations" to view the dictionary.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="dialectDictionary.js"></script>
+  <script>
+    const fromSelect = document.getElementById('fromLang');
+    const toSelect = document.getElementById('toLang');
+    const translationsDiv = document.getElementById('translations');
+    const showBtn = document.getElementById('showBtn');
+    const resultsCount = document.getElementById('resultsCount');
+
+    const languageNames = {
+      'tl': 'Tagalog',
+      'cb': 'Cebuano',
+      'hi': 'Hiligaynon',
+      'il': 'Ilocano',
+      'ag': 'Agta',
+      'en': 'English'
+    };
+
+    // Map language codes to dictionary keys
+    const codeToKey = {
+      'tl': 'tagalog',
+      'cb': 'cebuano',
+      'hi': 'hiligaynon',
+      'il': 'ilocano',
+      'en': 'english'
+    };
+
+    function getLanguageName(code) {
+      return languageNames[code] || code.toUpperCase();
+    }
+
+    // Gather all unique language codes
+    const languages = new Set();
+    for (const key in dialectDictionaries) {
+      const [from, to] = key.split('_');
+      languages.add(from);
+      languages.add(to);
+    }
+
+    // Fill dropdowns with language names
+    const sortedLangs = [...languages].sort();
+    sortedLangs.forEach(lang => {
+      // Convert key to display name (e.g., tagalog -> Tagalog)
+      const displayName = lang.charAt(0).toUpperCase() + lang.slice(1);
+      
+      const optionFrom = document.createElement('option');
+      optionFrom.value = lang;
+      optionFrom.textContent = displayName;
+      fromSelect.appendChild(optionFrom);
+
+      const optionTo = document.createElement('option');
+      optionTo.value = lang;
+      optionTo.textContent = displayName;
+      toSelect.appendChild(optionTo);
+    });
+
+    // Set defaults - try to find Tagalog and Cebuano
+    if (languages.has('tagalog')) fromSelect.value = 'tagalog';
+    if (languages.has('cebuano')) toSelect.value = 'cebuano';
+
+    function swapLanguages() {
+      const temp = fromSelect.value;
+      fromSelect.value = toSelect.value;
+      toSelect.value = temp;
+    }
+
+    showBtn.addEventListener('click', () => {
+      const from = fromSelect.value;
+      const to = toSelect.value;
+
+      if (from === to) {
+        translationsDiv.innerHTML = `
+          <div class="error-message">
+            <span class="material-icons-outlined">error</span>
+            Please select different source and target languages.
+          </div>
+        `;
+        resultsCount.textContent = '';
+        return;
+      }
+
+      // Build dictionary key from language codes
+      const fromKey = codeToKey[from] || from;
+      const toKey = codeToKey[to] || to;
+      const key = fromKey + '_' + toKey;
+      const reverseKey = toKey + '_' + fromKey;
+
+      let dictionary = dialectDictionaries[key];
+      let reverseMode = false;
+
+      if (!dictionary && dialectDictionaries[reverseKey]) {
+        dictionary = dialectDictionaries[reverseKey];
+        reverseMode = true;
+      }
+
+      if (!dictionary) {
+        translationsDiv.innerHTML = `
+          <div class="error-message">
+            <span class="material-icons-outlined">error</span>
+            No dictionary available for this language pair.
+          </div>
+        `;
+        resultsCount.textContent = '';
+        return;
+      }
+
+      const entryCount = Object.keys(dictionary).length;
+      resultsCount.textContent = entryCount + ' entries';
+
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      
+      const fromLabel = reverseMode ? toKey.charAt(0).toUpperCase() + toKey.slice(1) : fromKey.charAt(0).toUpperCase() + fromKey.slice(1);
+      const toLabel = reverseMode ? fromKey.charAt(0).toUpperCase() + fromKey.slice(1) : toKey.charAt(0).toUpperCase() + toKey.slice(1);
+      
+      thead.innerHTML = `
+        <tr>
+          <th>${fromLabel}</th>
+          <th>${toLabel}</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+
+      const entries = Object.entries(dictionary);
+
+      if (!reverseMode) {
+        entries
+          .sort((a, b) => a[0].localeCompare(b[0], 'en', { sensitivity: 'base' }))
+          .forEach(([k, v]) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${k}</td><td>${v}</td>`;
+            tbody.appendChild(tr);
+          });
+      } else {
+        entries
+          .sort((a, b) => String(a[1]).localeCompare(String(b[1]), 'en', { sensitivity: 'base' }))
+          .forEach(([k, v]) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${v}</td><td>${k}</td>`;
+            tbody.appendChild(tr);
+          });
+      }
+
+      table.appendChild(tbody);
+      translationsDiv.innerHTML = '';
+      translationsDiv.appendChild(table);
+    });
+  </script>
+</body>
+</html>

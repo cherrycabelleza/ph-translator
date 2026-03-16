@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Syllable Audio Checker — Admin</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="admin.css" rel="stylesheet">
+  <style>
+    .checker-card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow-light);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+    }
+    .checker-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .checker-toolbar input[type="text"] {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      min-width: 260px;
+    }
+    .checker-toolbar input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+    }
+    .stop-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .stop-btn:hover {
+      background: var(--accent);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .status-ok {
+      color: #16a34a;
+      font-weight: 600;
+    }
+    .status-missing {
+      color: #dc2626;
+      font-weight: 600;
+    }
+    .table-container {
+      margin-top: 8px;
+      max-height: 520px;
+      overflow-y: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: var(--shadow-light);
+      display: block; /* override admin.css default */
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 1;
+    }
+    th {
+      padding: 12px 16px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    tr:hover td {
+      background: var(--accent);
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <h1 class="admin-title">Syllable Audio Checker</h1>
+      <div class="nav-buttons">
+        <a href="PLT_MainPage.php" class="nav-btn" id="navMain">
+          <span class="material-icons-outlined" style="font-size:16px">home</span>
+          Main Page
+        </a>
+        <a href="AdminMainPage.php" class="nav-btn" id="navUnknown">
+          <span class="material-icons-outlined" style="font-size:16px">list</span>
+          Unknown Words
+        </a>
+        <a href="TranslationPage.php" class="nav-btn" id="navTranslations">
+          <span class="material-icons-outlined" style="font-size:16px">translate</span>
+          Translations
+        </a>
+        <a href="users-translations-adminview.php" class="nav-btn" id="navModeration">
+          <span class="material-icons-outlined" style="font-size:16px">gavel</span>
+          Moderation
+        </a>
+        <a href="TranslationLogs.php" class="nav-btn" id="navLogs">
+          <span class="material-icons-outlined" style="font-size:16px">history</span>
+          Logs
+        </a>
+        <a href="libraries.html" class="nav-btn" id="navLibraries">
+          <span class="material-icons-outlined" style="font-size:16px">menu_book</span>
+          Library
+        </a>
+        <a href="tts-tester.html" class="nav-btn" id="navTTS">
+          <span class="material-icons-outlined" style="font-size:16px">volume_up</span>
+          TTS Tester
+        </a>
+        <a href="admin_word_checker.html" class="nav-btn" id="navWordCheck">
+          <span class="material-icons-outlined" style="font-size:16px">music_note</span>
+          Word Audio
+        </a>
+        <a href="admin_syllable_checker.html" class="nav-btn active" id="navSyllableCheck">
+          <span class="material-icons-outlined" style="font-size:16px">grid_on</span>
+          Syllable Audio
+        </a>
+      </div>
+    </header>
+
+    <div class="checker-card">
+      <div class="checker-toolbar">
+        <input type="text" id="searchInput" placeholder="Search syllable…">
+        <button type="button" class="stop-btn" onclick="stopAudio()">
+          <span class="material-icons-outlined" style="font-size:18px">stop</span>
+          Stop Audio
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40%">Syllable</th>
+              <th style="width:30%">Status</th>
+              <th style="width:30%">Play</th>
+            </tr>
+          </thead>
+          <tbody id="syllableTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+// ======================================================
+// PHONOLOGICAL SETS (FILIPINO)
+const vowels = ["a","e","i","o","u"];
+const consonants = ["b","k","d","g","h","l","m","n","ng","p","r","s","t","w","y"];
+
+const SYLLABLE_AUDIO_BASE_URL = 'https://owqcypobhddssaofmzcf.supabase.co/storage/v1/object/public/tts-audio/mj-syllable_voicepack/';
+
+// ======================================================
+// ORDER-SAFE SYLLABLE COLLECTION
+const seen = new Set();
+const syllables = [];
+
+function addSyl(s) {
+    if (!seen.has(s)) {
+        seen.add(s);
+        syllables.push(s);
+    }
+}
+
+// V
+vowels.forEach(v => addSyl(v));
+// CV
+consonants.forEach(c => vowels.forEach(v => addSyl(c + v)));
+// VC
+vowels.forEach(v => consonants.forEach(c => addSyl(v + c)));
+// CVC
+consonants.forEach(c1 => vowels.forEach(v => consonants.forEach(c2 => addSyl(c1 + v + c2))));
+// SPECIAL FUNCTION WORDS
+["ang", "ng", "mga"].forEach(addSyl);
+
+// ======================================================
+// AUDIO CONTROL
+let currentAudio = null;
+
+function playAudio(path) {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
+    currentAudio = new Audio(`${path}?v=${Date.now()}`);
+    currentAudio.play();
+}
+
+function stopAudio() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+}
+
+// ======================================================
+// BUILD TABLE (ONCE)
+function buildTable() {
+    const tbody = document.getElementById("syllableTable");
+    tbody.innerHTML = "";
+
+    syllables.forEach(syl => {
+        const row = document.createElement("tr");
+        row.dataset.syllable = syl.toLowerCase(); // for search filter
+        row.innerHTML = `
+            <td>${syl}</td>
+            <td id="status_${syl}">Checking…</td>
+            <td>
+                <button id="btn_${syl}" disabled>▶ Play</button>
+            </td>
+        `;
+        row.querySelector(`#btn_${syl}`).onclick = () =>
+            playAudio(`${SYLLABLE_AUDIO_BASE_URL}${syl}.mp3`);
+
+        tbody.appendChild(row);
+    });
+}
+
+// ======================================================
+// CHECK AUDIO FILES (HEAD ONLY)
+async function updateStatuses() {
+    for (const syl of syllables) {
+        const file = `${SYLLABLE_AUDIO_BASE_URL}${syl}.mp3`;
+
+        const exists = await fetch(file, { method: "HEAD" })
+            .then(r => r.ok)
+            .catch(() => false);
+
+        const status = document.getElementById("status_" + syl);
+        const btn = document.getElementById("btn_" + syl);
+
+        if (exists) {
+            status.textContent = "✔ Available";
+            status.className = "status-ok";
+            btn.disabled = false;
+        } else {
+            status.textContent = "✖ Missing";
+            status.className = "status-missing";
+            btn.disabled = true;
+        }
+    }
+}
+
+// ======================================================
+// SEARCH FILTER
+document.getElementById("searchInput").addEventListener("input", function() {
+    const filter = this.value.toLowerCase();
+    document.querySelectorAll("#syllableTable tr").forEach(row => {
+        const syl = row.dataset.syllable;
+        if (syl.includes(filter)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+
+// ======================================================
+// INIT
+buildTable();
+updateStatuses();
+setInterval(updateStatuses, 3000);
+// Set active nav on load (defensive if opened from another route)
+const page = window.location.pathname.split('/').pop();
+if (page === 'admin_syllable_checker.html' && document.getElementById('navSyllableCheck')) {
+  document.getElementById('navSyllableCheck').classList.add('active');
+}
+  </script>
+
+</body>
+</html>
